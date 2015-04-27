@@ -61,5 +61,7 @@ if __name__ == '__main__':
 					print "Game", i, "invalid."
 					# XXX: Delete game here
 			
-			# Dump the file after updating it
-			json.dump(data, ("clean_" + fname))
+			# Dump the file after updating it\
+			with open(("clean_" + fname), "w") as outfile:
+				outfile.write(json.dumps(data))
+				

@@ -75,7 +75,7 @@ if __name__ == '__main__':
 		for i in xrange(size - 1):
 			comm.send(None, i + 1, tag = i + 1)
 
-		
+
 	else:
 
 		while (True):
@@ -101,8 +101,7 @@ if __name__ == '__main__':
 						# XXX: Delete game here
 				
 				# Dump the file after updating it
-				json.dump(data, ("clean_" + fname))
-
-				comm.send((1, rank), 0)
+				with open(("clean_" + fname), "w") as outfile:
+					outfile.write(json.dumps(data))
 
 
