@@ -68,7 +68,11 @@ def cleanup(match):
 						if (k_deltas + k_range) not in d:
 							d[(k_deltas + k_range)] = [None] * NUM_PLAYERS
 						d[(k_deltas + k_range)][playerId - 1] = deltas[k_range]
-					if len(deltas.keys()) == 3:
+					if len(deltas.keys()) <= 2:
+						if (k_deltas + "twentyToThirty") not in d:
+							d[(k_deltas + "twentyToThirty")] = [None] * NUM_PLAYERS
+						d[(k_deltas + "twentyToThirty")][playerId - 1] = 0
+					if len(deltas.keys()) <= 3:
 						if (k_deltas + "thirtyToEnd") not in d:
 							d[(k_deltas + "thirtyToEnd")] = [None] * NUM_PLAYERS
 						d[(k_deltas + "thirtyToEnd")][playerId - 1] = 0
