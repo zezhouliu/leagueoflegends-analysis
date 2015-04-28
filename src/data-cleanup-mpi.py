@@ -11,32 +11,99 @@ def cleanup(match):
 	if match['matchMode'] != "CLASSIC" or match['queueType'] != 'RANKED_SOLO_5x5':
 		return -1
 
-	# At the first level, we should delete some unncessary attributes
-	delkeys = ['platformId', 'matchMode', 'matchCreation', 'mapId', 'season', 'matchVersion']
-	for k in delkeys:
-		if k in match:
-			del match[k]
+	# Create dictionary for columns
+	d = {}
 
-	### Update data to numerical:
-	## Region:
-	if match['region'] == 'NA':
-		match['NA'] = 1
-		match['EU'] = 0
-		match['KR'] = 0
-	elif match['region'] == 'EU':
-		match['NA'] = 0
-		match['EU'] = 1
-		match['KR'] = 0
-	elif match['region'] == 'KR':
-		match['NA'] = 0
-		match['EU'] = 0
-		match['KR'] = 0
+	participants = match['participants']
+	for participant in participants:
 
-	# Now we should delete these fields
-	if 'region' in match:
-		del match['region']
+		# Grab the participant id
+		playerId = participant["participantId"]
 
-	return 0
+		for k in participant:
+
+			# Skip these keys:
+			if k == "teamId" or k == "masteries" or k == "runes" or k == "participantId":
+				continue
+
+			# Spell1Id and spell2Id are special categorical variables
+			if k == "spell1Id" or k == "spell2Id":
+				continue
+
+			if k == "highestAchievedSeasonTier":
+				tier = participant["highestAchievedSeasonTier"]
+				if tier == "BRONZE":
+					tier = 1
+				elif tier == "SILVER":
+					tier = 2
+				elif tier == "GOLD":
+					tier = 3
+				elif tier == "PLATINUM":
+					tier = 4
+				elif tier == "DIAMOND":
+					tier = 5
+				elif tier == "MASTER":
+					tier = 6
+				elif tier == "CHALLENGER":
+					tier = 7
+				else:
+					tier = 0
+				if "highestAchievedSeasonTier" not in d:
+					d["highestAchievedSeasonTier"] = [tier]
+				else:
+					d["highestAchievedSeasonTier"].append(tier)
+				continue
+
+			# Timeline and stats are special nested dictionaries
+			if k == 'timeline':
+				timeline = participant[k]
+				for k_deltas in timeline:
+					if k_deltas == "role" or k_deltas == "lane":
+						continue
+						if k_deltas not in d:
+							d[k_deltas] = [timeline[k_deltas]]
+						else:
+							d[k_deltas].append(timeline[k_deltas])
+						continue
+					deltas = timeline[k_deltas]
+					for k_range in deltas:
+						if (k_deltas + k_range) not in d:
+							d[(k_deltas + k_range)] = [deltas[k_range]]
+						else:
+							d[(k_deltas + k_range)].append(deltas[k_range])
+				continue
+
+			if k == 'stats':
+				stats = participant[k]
+				for k_stat in stats:
+					# Ignore some of the keys like "winner"
+					if k_stat == 'winner':
+						continue
+					if k_stat not in d:
+						d[k_stat] = [stats[k_stat]]
+					else:
+						d[k_stat].append(stats[k_stat])
+				continue
+
+			# If key not already in dictionary, then add it
+			if k not in d:
+				d[k] = [participant[k]]
+			elif k in d:
+				d[k].append(participant[k])
+
+	# Get number of keys:
+	num_keys = len(d.keys())
+	row = []
+	# Create a flatten row based on this dictionary
+	for i in xrange(10):
+		for k in d:
+			row.append(d[k][i])
+
+	# Add match ID and duration
+	row.append(match['matchId'])
+	row.append(match['matchDuration'])
+
+	return row
 
 
 if __name__ == '__main__':
@@ -47,7 +114,7 @@ if __name__ == '__main__':
 	"""
 
 	# setup communications metadata for MPI
-	comm = MPI.COMM_WORD
+	comm = MPI.COMM_WORLD
 	rank = comm.Get_rank()
 	size = comm.Get_size()
 
@@ -65,9 +132,8 @@ if __name__ == '__main__':
 				comm.send(filename, i + 1, tag = (i+1))
 				continue
 
-
 			# Listen for responses before sending new processes
-			res_val, res_rank = self.comm.recv(source=MPI.ANY_SOURCE)
+			res_val, res_rank = comm.recv(source=MPI.ANY_SOURCE)
 
 			comm.send(filename, res_rank, tag=res_rank)
 
@@ -91,17 +157,17 @@ if __name__ == '__main__':
 				data = json.load(json_data)
 				matches = data['matches']
 				
+				matches_matrix = []
 				# Clean up some of the data, i.e. delete unnecessary key-value pairs
 				for i in xrange(len(matches)):
 					match = matches[i]
-					clean_status = cleanup(match)
+					clean_row = cleanup(match)
+					matches_matrix.append(clean_row)
 
-					if clean_status < 0:
-						print "Game", i, "invalid."
-						# XXX: Delete game here
+				print matches_matrix
 				
 				# Dump the file after updating it
-				with open(("clean_" + fname), "w") as outfile:
-					outfile.write(json.dumps(data))
+				# with open(("clean_" + fname), "w") as outfile:
+					# outfile.write(json.dumps(data))
 
 
