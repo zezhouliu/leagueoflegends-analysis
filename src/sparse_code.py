@@ -76,3 +76,20 @@ def orthogonal_matching_pursuit(xs, Dt, D, k, zs, selected):
 			xs[x_index] = xs[x_index] - np.dot(D[:,selected[x_index]], gamma)
 
 	return orthogonal_matching_pursuit(xs, Dt, D, k-1, zs, selected)
+
+def sparsify (matrix, dictionary):
+	"""	
+	Generates sparse codes for each of the rows in matrix
+	matrix: List of X-vectors
+	dictionary: List of feature-vectors
+	"""
+
+	num_atoms = len(dictionary)
+	num_vectors = len(matrix)
+
+	sparse_codes = [None] * num_vectors
+
+	for i in xrange(num_vectors):
+		sparse_codes[i] = np.zeros(num_atoms, dtype=np.float)
+
+	return 0
