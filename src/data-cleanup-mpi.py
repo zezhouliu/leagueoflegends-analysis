@@ -13,7 +13,7 @@ def cleanup(match):
 
 	# Create dictionary for columns
 	d = {}
-
+	NUM_PLAYERS = 10
 	participants = match['participants']
 	for participant in participants:
 
@@ -49,9 +49,8 @@ def cleanup(match):
 				else:
 					tier = 0
 				if "highestAchievedSeasonTier" not in d:
-					d["highestAchievedSeasonTier"] = [tier]
-				else:
-					d["highestAchievedSeasonTier"].append(tier)
+					d["highestAchievedSeasonTier"] = [None] * NUM_PLAYERS
+				d["highestAchievedSeasonTier"][playerId - 1] = tier
 				continue
 
 			# Timeline and stats are special nested dictionaries
@@ -61,16 +60,22 @@ def cleanup(match):
 					if k_deltas == "role" or k_deltas == "lane":
 						continue
 						if k_deltas not in d:
-							d[k_deltas] = [timeline[k_deltas]]
-						else:
-							d[k_deltas].append(timeline[k_deltas])
+							d[k_deltas] = [None] * NUM_PLAYERS
+						d[k_deltas][playerId - 1] = timeline[k_deltas]
 						continue
 					deltas = timeline[k_deltas]
 					for k_range in deltas:
 						if (k_deltas + k_range) not in d:
-							d[(k_deltas + k_range)] = [deltas[k_range]]
-						else:
-							d[(k_deltas + k_range)].append(deltas[k_range])
+							d[(k_deltas + k_range)] = [None] * NUM_PLAYERS
+						d[(k_deltas + k_range)][playerId - 1] = deltas[k_range]
+					if len(deltas.keys()) <= 2:
+						if (k_deltas + "twentyToThirty") not in d:
+							d[(k_deltas + "twentyToThirty")] = [None] * NUM_PLAYERS
+						d[(k_deltas + "twentyToThirty")][playerId - 1] = 0
+					if len(deltas.keys()) <= 3:
+						if (k_deltas + "thirtyToEnd") not in d:
+							d[(k_deltas + "thirtyToEnd")] = [None] * NUM_PLAYERS
+						d[(k_deltas + "thirtyToEnd")][playerId - 1] = 0
 				continue
 
 			if k == 'stats':
@@ -80,28 +85,27 @@ def cleanup(match):
 					if k_stat == 'winner':
 						continue
 					if k_stat not in d:
-						d[k_stat] = [stats[k_stat]]
-					else:
-						d[k_stat].append(stats[k_stat])
+						d[k_stat] = [None] * NUM_PLAYERS
+					d[k_stat][playerId - 1] = stats[k_stat]
 				continue
 
 			# If key not already in dictionary, then add it
 			if k not in d:
-				d[k] = [participant[k]]
-			elif k in d:
-				d[k].append(participant[k])
+				d[k] = [None] * NUM_PLAYERS
+			d[k][playerId - 1] = participant[k]
 
 	# Get number of keys:
 	num_keys = len(d.keys())
 	row = []
-	# Create a flatten row based on this dictionary
-	for i in xrange(10):
-		for k in d:
-			row.append(d[k][i])
 
 	# Add match ID and duration
 	row.append(match['matchId'])
 	row.append(match['matchDuration'])
+
+	# Create a flatten row based on this dictionary
+	for i in xrange(10):
+		for k in d:
+			row.append(d[k][i])
 
 	return row
 
@@ -163,11 +167,10 @@ if __name__ == '__main__':
 					match = matches[i]
 					clean_row = cleanup(match)
 					matches_matrix.append(clean_row)
-
-				print matches_matrix
 				
 				# Dump the file after updating it
-				# with open(("clean_" + fname), "w") as outfile:
-					# outfile.write(json.dumps(data))
-
+				with open (("clean_" + fname), "wb") as outfile:
+					wr = csv.writer(outfile, quoting=csv.QUOTE_ALL)
+					for row in matches_matrix:
+						wr.writerow(row)
 
