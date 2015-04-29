@@ -57,6 +57,42 @@ def cleanup(match):
 			if k == 'timeline':
 				timeline = participant[k]
 				for k_deltas in timeline:
+
+					if k_deltas == "role":
+						role = timeline[k_deltas]
+						if role == 'SOLO':
+							role = 1
+						elif role == 'DUO':
+							role = 2
+						elif role == 'DUO_CARRY':
+							role = 3
+						elif role == 'DUO_SUPPORT':
+							role = 4
+						else:
+							role = 0
+						if 'role' not in d:
+							d['role'] = [None] * NUM_PLAYERS
+						d['role'][playerId - 1] = role
+						continue
+
+					if k_deltas == 'lane':
+						lane = timeline[k_deltas]
+						if lane == 'TOP':
+							lane = 1
+						elif lane == 'MID' or lane == 'MIDDLE':
+							lane = 2
+						elif lane == 'JUNGLE':
+							lane = 3
+						elif lane == 'BOT' or lane == 'BOTTOM':
+							lane = 4
+						else:
+							lane = 0
+						if 'lane' not d:
+							d['lane'] = [None] * NUM_PLAYERS
+						d['lane'][playerId - 1] = lane
+						continue
+
+
 					if k_deltas == "role" or k_deltas == "lane":
 						continue
 						if k_deltas not in d:
