@@ -107,3 +107,34 @@ def sparsify (matrix, dictionary, k):
 	results = matching_pursuit(cpy_matrix, Dt, k, sparse_codes)
 
 	return results
+
+def sparsify_omp (matrix, dictionary, k):
+	"""	
+	Generates sparse codes for each of the rows in matrix
+	matrix: List of X-vectors
+	dictionary: List of feature-vectors
+	"""
+
+	num_atoms = len(dictionary)
+	num_vectors = len(matrix)
+
+	# Copy the matrix
+	cpy_matrix = [None] * num_vectors
+	for i in xrange(num_vectors):
+		cpy_matrix[i] = np.zeros(len(matrix[i]), dtype=np.float)
+		for j in xrange(len(matrix[i])):
+			cpy_matrix[i][j] = matrix[i][j]
+
+	sparse_codes = [None] * num_vectors
+	selected = [None] * num_vectors
+
+	for i in xrange(num_vectors):
+		sparse_codes[i] = np.zeros(num_atoms, dtype=np.float)
+		selected[i] = []
+
+	Dt = dictionary
+	D = np.transpose(Dt)
+
+	results = orthogonal_matching_pursuit(cpy_matrix, Dt, D, k, sparse_codes, selected)
+
+	return results
