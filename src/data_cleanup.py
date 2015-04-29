@@ -129,6 +129,8 @@ def data_cleanup(filenames):
 	#	'matches6.json', 'matches7.json', 'matches8.json', 'matches9.json', 'matches10.json']
 	
 
+	matches_matrix = []
+	winners_matrix = []
 	for fname in filenames:
 
 		with open(fname) as json_data:
@@ -136,8 +138,6 @@ def data_cleanup(filenames):
 			# data is { 'matches' : [...]}
 			data = json.load(json_data)
 			matches = data['matches']
-			matches_matrix = []
-			winners_matrix = []
 			# Clean up some of the data, i.e. delete unnecessary key-value pairs
 			for i in xrange(len(matches)):
 				match = matches[i]
@@ -151,7 +151,7 @@ def data_cleanup(filenames):
 			# 	for row in matches_matrix:
 			# 		wr.writerow(row)
 
-		return matches_matrix, winners_matrix
+	return matches_matrix, winners_matrix
 
 if __name__ == '__main__':
 

@@ -5,8 +5,8 @@ if __name__ == '__main__':
 
 	BLOCKSIZE = 1048576 # or some other, desired size in bytes
 
-	sourceFiles = ['matches1.json']
-	targetFiles = ['m1.json']
+	sourceFiles = ['matches1.json', 'matches2.json', 'matches3.json', 'matches4.json', 'matches5.json']
+	targetFiles = ['m1.json', 'm2.json', 'm3.json', 'm4.json', 'm5.json']
 	for i in xrange(len(sourceFiles)):
 		sourceFileName = sourceFiles[i]
 		targetFileName = targetFiles[i]
