@@ -26,9 +26,10 @@ def KMeansCluster(matrix):
 		init='k-means++', n_jobs = num_cpus)
 
 	print clusters
+	return clusters
 
 if __name__ == '__main__':
 
 	# Load the preliminary data set
 	d = data_cleanup()
-	KMeansCluster(d)
+	clusters = KMeansCluster(d)
