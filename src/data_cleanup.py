@@ -155,5 +155,5 @@ def data_cleanup(filenames):
 
 if __name__ == '__main__':
 
-	matches_matrix = data_cleanup()
-				
+    matches_matrix = data_cleanup()
+                
