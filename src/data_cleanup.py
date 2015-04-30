@@ -2,6 +2,7 @@ import json
 import csv
 
 def cleanup(match):
+
     """
     cleanup(match)
     @Brief: Cleans up unncessary fields.  Converts fields of interest to quantitative values
@@ -82,8 +83,8 @@ def cleanup(match):
                 stats = participant[k]
                 for k_stat in stats:
                     # Ignore some of the keys like "winner"
-                    if k_stat == 'winner':
-                        continue
+                    # if k_stat == 'winner':
+                    #   continue
                     if k_stat not in d:
                         d[k_stat] = [None] * NUM_PLAYERS
                     d[k_stat][playerId - 1] = stats[k_stat]
@@ -105,6 +106,12 @@ def cleanup(match):
     # Create a flatten row based on this dictionary
     for i in xrange(10):
         for k in d:
+            if k == 'winner':
+                continue
+                # if d[k][i] == False:
+                #   winner.append(0)
+                # else:
+                #   winner.append(1)
             if not d[k][i]:
                 row.append(0)
             elif d[k][i] == True:
@@ -112,14 +119,18 @@ def cleanup(match):
             else:
                 row.append(d[k][i])
 
-    return row
+    blue_win = 0
+    if d['winner'][0] == True:
+        blue_win = 1
+    return row, blue_win
 
 
-def data_cleanup():
-        #filenames = ['matches1.json', 'matches2.json', 'matches3.json', 'matches4.json', 'matches5.json', 
+def data_cleanup(filenames):
+    #filenames = ['matches1.json', 'matches2.json', 'matches3.json', 'matches4.json', 'matches5.json', 
     #   'matches6.json', 'matches7.json', 'matches8.json', 'matches9.json', 'matches10.json']
-    filenames = ['matches_1.json']
 
+    matches_matrix = []
+    winners_matrix = []
     for fname in filenames:
 
         with open(fname) as json_data:
@@ -127,20 +138,20 @@ def data_cleanup():
             # data is { 'matches' : [...]}
             data = json.load(json_data)
             matches = data['matches']
-            matches_matrix = []
             # Clean up some of the data, i.e. delete unnecessary key-value pairs
             for i in xrange(len(matches)):
                 match = matches[i]
-                clean_match = cleanup(match)
+                clean_match, winner = cleanup(match)
                 matches_matrix.append(clean_match)
+                winners_matrix.append(winner)
     
             # Dump the file after updating it
-            with open (("clean_" + str(i) + ".csv"), "wb") as outfile:
-                wr = csv.writer(outfile, quoting=csv.QUOTE_ALL)
-                for row in matches_matrix:
-                    wr.writerow(row)
+            # with open (("clean_" + str(i) + ".csv"), "wb") as outfile:
+            #   wr = csv.writer(outfile, quoting=csv.QUOTE_ALL)
+            #   for row in matches_matrix:
+            #       wr.writerow(row)
 
-        return matches_matrix
+    return matches_matrix, winners_matrix
 
 if __name__ == '__main__':
 

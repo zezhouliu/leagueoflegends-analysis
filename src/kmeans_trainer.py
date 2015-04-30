@@ -25,7 +25,6 @@ def KMeansCluster(matrix):
     clusters = k_means(data, n_clusters = num_clusters, max_iter=number_iter, n_init = number_iter, 
         init='k-means++', n_jobs = num_cpus)
 
-    print clusters
     return clusters
 
 if __name__ == '__main__':

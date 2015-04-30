@@ -2,7 +2,6 @@ import codecs
 
 if __name__ == '__main__':
 
-
     BLOCKSIZE = 1048576 # or some other, desired size in bytes
 
     sourceFiles = ['matches1.json']
