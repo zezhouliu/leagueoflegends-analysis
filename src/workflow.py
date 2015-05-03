@@ -1,13 +1,13 @@
 import kmeans_trainer
 import sparse_code
-import data_cleanup
+import cleanup_pregame
 from sklearn.svm import SVC
 
 
 def run ():
 
 	filenames = ['m1.json', 'm2.json', 'm3.json']
-	matches_matrix, winners_matrix = data_cleanup.data_cleanup(filenames)
+	matches_matrix, winners_matrix = cleanup_pregame.data_cleanup(filenames)
 
 	for i in xrange(len(matches_matrix)):
 		if len(matches_matrix[i]) != 872:
@@ -31,7 +31,7 @@ def run ():
 
 	# Test data
 	testnames = ['m5.json']
-	test_matrix, test_winners = data_cleanup.data_cleanup(testnames)
+	test_matrix, test_winners = cleanup_pregame.data_cleanup(testnames)
 	# Some clean-up
 	for i in xrange(len(test_matrix)):
 		if len(test_matrix[i]) != 872:
@@ -44,8 +44,13 @@ def run ():
 
 def run_pregame ():
 
+	directory_prefix = 'data/'
 	filenames = ['m1.json', 'm2.json', 'm3.json']
-	matches_matrix, winners_matrix = data_cleanup.data_cleanup(filenames)
+	full_filenames = []
+	for fname in filenames:
+		full_filenames.append((directory_prefix) + fname)
+
+	matches_matrix, winners_matrix = cleanup_pregame.data_cleanup(full_filenames)
 
 	expected_length = len(matches_matrix[0])
 	num_unexpected = 0
@@ -73,7 +78,10 @@ def run_pregame ():
 
 	# Test data
 	testnames = ['m5.json']
-	test_matrix, test_winners = data_cleanup.data_cleanup(testnames)
+	full_testnames = []
+	for fname in testnames:
+		full_testnames.append((directory_prefix) + fname)
+	test_matrix, test_winners = cleanup_pregame.data_cleanup(testnames)
 
 	test_unexpected = 0
 
@@ -88,6 +96,7 @@ def run_pregame ():
 	print clf.score(test_codes, test_winners)
 	return
 
-run_pregame()
+if __name__ == '__main__':
+	run_pregame()
 
 

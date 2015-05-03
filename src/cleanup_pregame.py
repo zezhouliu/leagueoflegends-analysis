@@ -244,7 +244,7 @@ def cleanup_pregame(match):
     row = []
 
     # Add match ID and duration
-    row.append(match['matchId'])
+    # row.append(match['matchId'])
     row.append(match['matchDuration'])
 
     # Create a flatten row based on this dictionary

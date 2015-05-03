@@ -18,12 +18,15 @@ def KMeansCluster(matrix):
     num_clusters = int(sqrt(len(matrix) / 2))
     number_init = 10 # Default
     number_iter = 300
-    num_cpus = 2
+    num_cpus = 1
 
     # estimator = KMeans(init='k-means++', n_clusters = num_clusters, n_init = number_init)
     # estimator.fit(data)
+    # clusters = k_means(data, n_clusters = num_clusters, max_iter=number_iter, n_init = number_iter, 
+    #     init='k-means++', n_jobs = num_cpus)
     clusters = k_means(data, n_clusters = num_clusters, max_iter=number_iter, n_init = number_iter, 
-        init='k-means++', n_jobs = num_cpus)
+        n_jobs = num_cpus)
+
 
     return clusters
 
