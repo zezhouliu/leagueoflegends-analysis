@@ -5,7 +5,7 @@ summoner_spells = {
     1 : "cleanse",
     7 : "heal",
     10: "revive",
-    181: "smite",
+    11: "smite",
     3: "exhaust",
     12: "teleport",
     13: "clarity",
@@ -177,17 +177,21 @@ def cleanup_pregame(match):
 
     for k in champions:
         championId = champions[k]
-        champKey = "c" = str(championId)
-        d[champKey] = [0]
+        champKey = "c" + str(championId)
+        d[champKey] = [0] * NUM_PLAYERS
 
     for k in season_tiers:
-        d[k] = 0
+        d[k] = [0] * NUM_PLAYERS
+
+    d['winner'] = [0] * NUM_PLAYERS
 
     for participant in participants:
 
         # Grab the participant id
         playerId = participant["participantId"]
-
+        role = participant['timeline']['role']
+        lane = participant['timeline']['lane']
+        d['winner'][playerId - 1] = participant['stats']['winner']
         for k in participant:
 
             # Skip post-game stats
@@ -217,17 +221,17 @@ def cleanup_pregame(match):
 
             if k == 'championId':
                 championId = participant[k]
-                champKey = c + str(championId)
+                champKey = "c" + str(championId)
                 if champKey not in d:
                     d[champKey] = [0]
-                d[champKey] = 1
+                d[champKey][playerId - 1] = 1
                 continue
 
             if k == "highestAchievedSeasonTier":
                 tier = participant["highestAchievedSeasonTier"]
                 if tier not in d:
-                    d[tier] = [0]
-                d[tier] += 1
+                    d[tier] = [0] * NUM_PLAYERS
+                d[tier][playerId - 1] = 1
                 continue
                 
             # If key not already in dictionary, then add it
@@ -248,10 +252,6 @@ def cleanup_pregame(match):
         for k in d:
             if k == 'winner':
                 continue
-                # if d[k][i] == False:
-                #   winner.append(0)
-                # else:
-                #   winner.append(1)
             if not d[k][i]:
                 row.append(0)
             elif d[k][i] == True:
@@ -281,7 +281,7 @@ def data_cleanup(filenames):
             # Clean up some of the data, i.e. delete unnecessary key-value pairs
             for i in xrange(len(matches)):
                 match = matches[i]
-                clean_match, winner = cleanup(match)
+                clean_match, winner = cleanup_pregame(match)
                 matches_matrix.append(clean_match)
                 winners_matrix.append(winner)
     
