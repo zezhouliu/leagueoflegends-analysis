@@ -29,7 +29,7 @@ def run ():
 	clf.fit(sparse_codes, winners_matrix)
 
 	# Test data
-	testnames = ['m5.json']
+	testnames = ['m1.json']
 	test_matrix, test_winners = data_cleanup.data_cleanup(testnames)
 	# Some clean-up
 	for i in xrange(len(test_matrix)):
@@ -41,6 +41,7 @@ def run ():
 	print clf.score(test_codes, test_winners)
 	return
 
-run()
+if __name__ == '__main__':
+	run()
 
 
