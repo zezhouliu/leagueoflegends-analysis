@@ -90,7 +90,7 @@ def sparsify (matrix, dictionary, k):
     # Copy the matrix
     cpy_matrix = [None] * num_vectors
     for i in xrange(num_vectors):
-        cpy_matrix[i] = np.zeros(len(matrix[i]), dtype=np.float)
+        cpy_matrix[i] = np.zeros(len(matrix[i]), dtype=np.double)
         for j in xrange(len(matrix[i])):
             cpy_matrix[i][j] = matrix[i][j]
 
@@ -98,8 +98,8 @@ def sparsify (matrix, dictionary, k):
     selected = [None] * num_vectors
 
     for i in xrange(num_vectors):
-        sparse_codes[i] = np.zeros(num_atoms, dtype=np.float)
-        selected[i] = np.zeros(num_atoms, dtype=np.float)
+        sparse_codes[i] = np.zeros(num_atoms, dtype=np.double)
+        selected[i] = np.zeros(num_atoms, dtype=np.double)
 
     Dt = dictionary
     D = np.transpose(Dt)
@@ -121,7 +121,7 @@ def sparsify_omp (matrix, dictionary, k):
     # Copy the matrix
     cpy_matrix = [None] * num_vectors
     for i in xrange(num_vectors):
-        cpy_matrix[i] = np.zeros(len(matrix[i]), dtype=np.float)
+        cpy_matrix[i] = np.zeros(len(matrix[i]), dtype=np.double)
         for j in xrange(len(matrix[i])):
             cpy_matrix[i][j] = matrix[i][j]
 
@@ -129,7 +129,7 @@ def sparsify_omp (matrix, dictionary, k):
     selected = [None] * num_vectors
 
     for i in xrange(num_vectors):
-        sparse_codes[i] = np.zeros(num_atoms, dtype=np.float)
+        sparse_codes[i] = np.zeros(num_atoms, dtype=np.double)
         selected[i] = []
 
     Dt = dictionary

@@ -45,7 +45,7 @@ def run ():
 def run_pregame ():
 
 	directory_prefix = 'data/'
-	filenames = ['m1.json', 'm2.json', 'm3.json']
+	filenames = ['m1.json', 'm2.json', 'm3.json', 'm4.json', 'm6.json']
 	full_filenames = []
 	for fname in filenames:
 		full_filenames.append((directory_prefix) + fname)
@@ -76,24 +76,40 @@ def run_pregame ():
 	clf = SVC()
 	clf.fit(sparse_codes, winners_matrix)
 
+	print "Original training:", clf.score(sparse_codes, winners_matrix)
+
+	# return
+
 	# Test data
-	testnames = ['m5.json']
+	testnames = ['m1.json', 'm2.json', 'm3.json', 'm4.json']
 	full_testnames = []
 	for fname in testnames:
 		full_testnames.append((directory_prefix) + fname)
-	test_matrix, test_winners = cleanup_pregame.data_cleanup(testnames)
 
-	test_unexpected = 0
+	for fname in full_testnames:
+		fname_a = [fname]
+		print fname
+		test_matrix, test_winners = cleanup_pregame.data_cleanup(fname_a)
 
-	# Some clean-up
-	for i in xrange(len(test_matrix)):
-		if len(test_matrix[i]) != expected_length:
-			test_matrix[i] = test_matrix[i-1]
-			test_unexpected += 1
+		test_unexpected = 0
 
-	test_codes = sparse_code.sparsify_omp(test_matrix, clusters, k)
+		# Some clean-up
+		# for i in xrange(len(test_matrix)):
+		# 	if len(test_matrix[i]) != expected_length:
+		# 		test_matrix[i] = test_matrix[i-1]
+		# 		test_unexpected += 1
 
-	print clf.score(test_codes, test_winners)
+		test_codes = sparse_code.sparsify_omp(test_matrix, clusters, 15)
+
+		print clf.score(test_codes, test_winners)
+
+		wins = 0
+		for i in xrange(len(test_winners)):
+			if test_winners[i] != 0:
+				wins += 1
+
+		print float(wins) / len(test_winners)
+
 	return
 
 if __name__ == '__main__':

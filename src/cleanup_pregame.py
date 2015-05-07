@@ -155,6 +155,15 @@ season_tiers = {
     "UNRANKED"   : 0
 }
 
+def find_fill (players):
+    print "Finding fill..."
+    if len(players) == 4:
+        for x in xrange(5):
+            if x + 1 not in players:
+                players.append(x + 1)
+                return x + 1
+    return 0
+
 def cleanup_pregame(match):
 
     """
@@ -175,23 +184,152 @@ def cleanup_pregame(match):
     for k in summoner_spells:
         d[summoner_spells[k]] = [0] * NUM_PLAYERS
 
+    champs = {}
     for k in champions:
         championId = champions[k]
         champKey = "c" + str(championId)
         d[champKey] = [0] * NUM_PLAYERS
+        champs[championId] = k
 
     for k in season_tiers:
         d[k] = [0] * NUM_PLAYERS
 
     d['winner'] = [0] * NUM_PLAYERS
 
+    playersBlue = []
+    playersRed = []
+    # print "-----------------NEW MATCH-----------------"
     for participant in participants:
 
         # Grab the participant id
-        playerId = participant["participantId"]
+        participantId = participant["participantId"]
         role = participant['timeline']['role']
         lane = participant['timeline']['lane']
+        if participantId <= 5:
+            players = playersBlue
+        else:
+            players = playersRed
+
+        if role == 'SOLO':
+            if (lane == 'MID' or lane == 'MIDDLE'):
+                playerId = 1
+                if playerId in players:
+                    x = find_fill(players)
+                    if x == 0:
+                        print players
+                        print role, lane, champs[participant['championId']]
+                        assert False
+                players.append(playerId)
+            elif (lane == 'TOP'):
+                playerId = 2
+                if playerId in players:
+                    playerId = 3
+                    if playerId in players:
+                        playerId = 1
+                        if playerId in players:
+                            playerId = 4
+                            if playerId in players:
+                                x = find_fill(players)
+                                if x == 0:
+                                    print players
+                                    print role, lane, champs[participant['championId']]
+                                    assert False
+                players.append(playerId)
+            elif (lane == 'BOTTOM' or lane == 'BOT'):
+                playerId = 3
+                if playerId in players:
+                    x = find_fill(players)
+                    if x == 0:
+                        print players
+                        print role, lane, champs[participant['championId']]
+                        assert False
+                players.append(playerId)
+            else:
+                x = find_fill(players)
+                if x == 0:
+                    print "Found (lane, role):", lane, role, participant['championId']
+                    assert False
+        elif lane == 'TOP':
+            playerId = 2
+            if playerId in players:
+                if role == 'DUO_SUPPORT':
+                    playerId = 4
+                else:
+                    playerId = 3
+                if playerId in players:
+                    x = find_fill(players)
+                    if x == 0:
+                        print participantId, role, lane, champs[participant['championId']]
+                        print playersBlue, playersRed
+                        assert False
+            else:
+                players.append(playerId)
+        elif role == 'DUO_CARRY' or role == 'DUO':
+            if lane == 'MIDDLE' or lane == 'MID':
+                playerId = 1
+            else:
+                playerId = 3
+                if playerId in players:
+                    playerId = 4
+                    if playerId in players:
+                        playerId = 1
+                        if playerId in players:
+                            x = find_fill(players)
+                            if x == 0:
+                                print participantId, role, lane, participant['championId']
+                                print playersBlue, playersRed
+                                assert False
+            players.append(playerId)
+        elif role == 'DUO_SUPPORT':
+            playerId = 4
+            if playerId in players:
+                playerId = 5
+                if playerId in players:
+                    playerId = 2 
+                    if playerId in players:
+                        x = find_fill(players)
+                        if x == 0:
+                            print participantId, role, lane, champs[participant['championId']]
+                            print playersBlue, playersRed
+                            assert False
+            players.append(playerId)
+        elif role == 'NONE':
+            playerId = 5
+            if playerId in players:
+                if lane == 'BOTTOM' or lane == 'BOT':
+                    playerId = 4
+                    if playerId in players:
+                        playerId = 3
+                        if playerId in players:
+                            print participantId, role, lane, champs[participant['championId']]
+                            print playersBlue, playersRed
+                            assert False
+                else:
+                    playerId = 2
+                    if playerId in players:
+                        playerId = 3
+                        if playerId in players:
+                            playerId = 1
+                            if playerId in players:
+                                playerId = 4
+                                if playerId in players:
+                                    print participantId, role, lane, champs[participant['championId']]
+                                    print playersBlue, playersRed
+                                    assert False
+            players.append(playerId)
+        else:
+            x = find_fill(players)
+            if x == 0:
+                print participantId, role, lane, participant['championId']
+                print playersBlue, playersRed
+                assert False
+
+
+        # print role, lane, champs[participant['championId']], players[len(players) - 1]
+
         d['winner'][playerId - 1] = participant['stats']['winner']
+
+
         for k in participant:
 
             # Skip post-game stats
@@ -245,7 +383,7 @@ def cleanup_pregame(match):
 
     # Add match ID and duration
     # row.append(match['matchId'])
-    row.append(match['matchDuration'])
+    # row.append(match['matchDuration'])
 
     # Create a flatten row based on this dictionary
     for i in xrange(10):
@@ -253,15 +391,18 @@ def cleanup_pregame(match):
             if k == 'winner':
                 continue
             if not d[k][i]:
-                row.append(0)
+                # row.append(0)
+                row.append(k)
             elif d[k][i] == True:
-                row.append(1)
+                # row.append(1.)
+                row.append(k)
             else:
-                row.append(d[k][i])
+                # row.append(float(d[k][i]))
+                row.append(k)
 
     blue_win = 0
     if d['winner'][0] == True:
-        blue_win = 1
+        blue_win = 1.
     return row, blue_win
 
 
