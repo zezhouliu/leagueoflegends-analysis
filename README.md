@@ -27,3 +27,9 @@ are only related to the game itself, and has no information about match outcomes
 certain factors inherent to the game itself such as team composition might be more advantageous than others 
 (regardless of the effects of the players).
 We expect a relatively low accuracy since our expectation is that the win-rates are more heavily dependent on player skill-levels.
+
+### Match-History
+The match-history model attempts to draw a balance between how much information is required to build a good model.  
+This model attempts to utilize as much information as possible, including all the data from past matches, as well as 
+much knowledge as possible of the match before it occurs.  This model is heavily data-intensive, requiring significantly 
+more data than the previous ones to train. 
