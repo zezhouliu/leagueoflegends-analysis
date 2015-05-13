@@ -58,9 +58,46 @@ Moreover, the large data explosion that occurs when gathering match history data
 
 Due to this system, people in the higher brackets are matched with the same people much more frequently. We can thus increase the effectiveness of our computation by selecting games of Challenger players. This was seen as in our analysis of 543 games, we archived the history for 787 unique players. This ratio is $\frac{787}{543} = 1.44$ players per game, which is far better than the ratio of 10 unique players per game which we would expect if we looked at a completely random match. 
 
-After acquiring the player histories, the data needs to be pre-processed and converted into a format that can be inputted into an ML model.  As with our previous convention, we want to create a vector (or a matrix in this case, due to multiple matches in a match history) to represent each match. 
+After acquiring the player histories, the data needs to be pre-processed and converted into a format that can be inputted into an ML model.  As with our previous convention, we want to create a vector (or a matrix in this case, since we have 10 players and multiple features) to represent each match. 
 
-Although applying PCA would be ideal for reducing the dimensions of the data and maintaining variance, we explicitly chose a relatively dense set of features based on 
-specific domain knowledge of the game.  ("Kills", "Deaths", "Assists", "GoldEarned", "DamageToChampions", "DamageOverall", "GamesPlayed", "Wins". This is a good introductory feature set, as though it lacks some of the more complex to express features which mirror complex strategies in the game, it contains the basics.) 
+Although applying PCA would be ideal for reducing the dimensions of the data while maintaining variance, we explicitly chose a relatively dense set of features based on 
+specific domain knowledge of the game.  The chosen set of features are (\"Kills\", \"Deaths\", \"Assists\", \"GoldEarned\", \"DamageToChampions\", \"DamageOverall\", \"GamesPlayed\", \"Wins\"), which should be mostly uncorrelated. This is a good introductory feature set, as though it lacks some of the more complex to express features which mirror complex strategies in the game, it contains the basics.  This step replaces the need to use K-Means clustering to train a feature set. 
 
-Once these features were extracted and transformed into a CSV format easily consumable by the sklearn python module, I split the data into a training and testing set and fed it into a SVM model and a Random Forest Classifier. No sparsifying of the dataset was one before-hand, as the set of features is dense. 
+Once these features were extracted and transformed into a CSV format easily consumable by the sklearn python module, the data is randomly split into a training and testing set and fed it into a SVM model and a Random Forest Classifier. In this case, no sparsifying of the dataset was done before-hand, as the set of features is expected to be dense.  
+
+\section{System Description. }
+
+The system for the first two techniques has a straight pipeline starting with data pre-processing, to feature extraction, sparse coding, SVM training, and then classification.  This process is described in at a high level in the previous section under Naive Post-match and Pre-match.  This entire process is implemented in Python, using the sklearn library for machine learning.  The sklearn library contains all of the required functionality to do K-Means clustering and SVM classifying.  Many of the components were parallelized using OpenMP for Python.  
+
+
+\includegraphics[scale=.6]{systemdescription}
+
+We focus our system description on the workflow that models over match histories.  
+The first stages (Steps A,B,C) of this process was to extract features from the data and convert this data into a consumable format. This process is described at a high level in the previous section under Data Wrangling.
+
+The data collection stage is done with a Java application using the Orianna project, which wraps the Riot API with a robust interface that among many things allows the retrieved data to be serialized to disk. This step can further be divided into three parts:
+
+\begin{enumerate}
+\item Given a player, search through his match history. For every match found iterate through all 10 players and download the match history of each player. This step is very time and disk space expensive, as many many thousands of matches but be written to disk. Also, due to the fact that the Riot API key is rate limited, parallelism is of little use here as the rate limit is the main bottleneck. (This is step A)
+\item Given a match, we have 10 players. For each player, iterate through the 150 game history. For each player, create a feature set. In this specific case, we aggregated (summed) certain numeric stats for each player. Align these feature sets so that they are in the form TEAM A:TEAM B:DID TEAM A WIN, where TEAM A = PLAYER 1 STATS:PLAYER 2 STATS: ... : PLAYER 5 STATS and likewise for TEAM B. This is then an array of longs, which is saved to disk. This step is time consuming; in the current Java version multithreading is implemented to accelerate the speed at which matches can be processed. (This is step B)
+\item Given a set of matches, convert these into a CSV. This is by far the easiest step, no more than converting a group of serialized long arrays into one CSV. (This is step C)
+
+\end{enumerate}
+
+The second part of the previously detailed process is implemented using Hadoop MapReduce in Java (Step B:H). This allows for much faster processing of matches in parallel. However, it is very memory intensive (thousands of matches must be loaded into memory for analysis) so depending of hardware constraints 
+the Java multi-threaded version could be faster/more optimal to use. 
+
+The second stage (Step D) of this project is to once data has been aggregated, to consume this data and produce a model, and to see how accurate this model is. As stated earlier, sklearn was used, specifically SVM and Random Decision Forests. This train and test models using cross validation if opted for, and to save the model to disk if opted for. 
+
+
+\section{Performance Evaluation}
+\textbf{Speed}
+
+In all of the workflows above, the data collection and pre-processing took the bulk of the time.  We focus on the description of our main sophisticated system, but the results are very similar in our first two workflows.  Our data collection is limited by the API-rate allowed by the developers of League of Legends.  As of now, there is no real way to get around the API limit without obtaining a 
+production key or exploiting multiple API keys. Step 1 took over 100 compute hours to aggregate the 512 datapoints into the final data format.
+
+\textbf{Accuracy}
+
+\includegraphics[scale=.5]{modelscore}
+
+The model, using cross validation, hovers at around 90\% accuracy over 384 test and 128 train datapoints. (Randomly segregated into those splits given an initial 512-sample set) This is surprisingly high for my expectations.
