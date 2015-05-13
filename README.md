@@ -18,3 +18,12 @@ The post-match model attempts to determine the winning team of a match given all
 The post-match data contains everything about the match, including individual kills, deaths, gold accumulation, etc.  Since this 
 model has access to all the post-match data for the match, we expect a high accuracy since some variables should be highly correlated 
 with the match's outcome.  
+
+### Pre-Match 
+The pre-match model attempts to determine the winning team of a match using only the pre-match data. 
+The pre-match data contains only data that are intrinsic to the game, such as which champions are being played, 
+which spells are being used (each player can only choose 2 spells out of approximately 8), etc.  These variables 
+are only related to the game itself, and has no information about match outcomes.  This model should predict whether 
+certain factors inherent to the game itself such as team composition might be more advantageous than others 
+(regardless of the effects of the players).
+We expect a relatively low accuracy since our expectation is that the win-rates are more heavily dependent on player skill-levels.
