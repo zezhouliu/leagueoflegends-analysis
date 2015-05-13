@@ -11,7 +11,7 @@ winning team for a given league of legends match using different strategies.  So
 - Random Forests 
 
 ## Project Components 
-This project is divided into three related models: post-match, pre-match, and match-history.
+This project is divided into three related models: post-match, pre-match, and match-history. 
 
 ### Post-Match 
 The post-match model attempts to determine the winning team of a match given all the post-match data using a naive classifier. 
@@ -33,3 +33,12 @@ The match-history model attempts to draw a balance between how much information 
 This model attempts to utilize as much information as possible, including all the data from past matches, as well as 
 much knowledge as possible of the match before it occurs.  This model is heavily data-intensive, requiring significantly 
 more data than the previous ones to train. 
+
+## Project Layout
+```
+    |-- report
+    |-- postmatch
+    |-- prematch
+    |-- matchhistory
+```
+Individual instructions can be found in their respective 
