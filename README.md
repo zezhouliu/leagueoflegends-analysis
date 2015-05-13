@@ -36,9 +36,10 @@ more data than the previous ones to train.
 
 ## Project Layout
 ```
+    project
     |-- report
     |-- postmatch
     |-- prematch
     |-- matchhistory
 ```
-Individual instructions can be found in their respective 
+Individual instructions can be found in their respective directories.
